@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!--task detail -->
+        <TextView
+            android:id="@+id/askText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/task_detail" />
+
+        <EditText
+            android:id="@+id/etTaskText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:ems="10"
+            android:inputType="textMultiLine" />
+
+
+        <!--due date -->
+        <TextView
+            android:id="@+id/askDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/task_duedate" />
+
+        <EditText
+            android:id="@+id/etDueDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/etTaskText"
+            android:ems="10"
+            android:focusable="false"
+            android:onClick="bringUpDatePicker" />
+
+
+        <!-- priority -->
+        <TextView
+            android:id="@+id/askPriority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/task_priority" />
+
+        <RadioGroup
+            android:id="@+id/priorityGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text"
+            android:checkedButton="@+id/rbLow"
+            android:orientation='horizontal'>
+
+            <RadioButton
+                android:id="@+id/rbLow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/low" />
+
+            <RadioButton
+                android:id="@+id/rbMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/medium" />
+
+            <RadioButton
+                android:id="@+id/rbHigh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/high" />
+
+        </RadioGroup>
+
+
+        <!-- classification -->
+        <TextView
+            android:id="@+id/askClassification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/task_classification" />
+
+        <Spinner
+            android:id="@+id/spinnerClassification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/classification_choices"
+            android:prompt="@string/classification_prompt" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="103dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="center"
+            android:background="@color/colorPrimaryDark"
+            android:drawableLeft="@mipmap/simplifysave2"
+            android:padding="10dp"
+            android:paddingRight="20dp"
+            android:text="Save"
+            android:textColor="@color/white" />
+
+
+    </LinearLayout>
+
+    <!-- <Button
+         android:id="@+id/btnDelete"
+         android:layout_width="100dp"
+         android:padding="10dp"
+
+         android:paddingLeft="20dp"
+         android:layout_height="wrap_content"
+         android:textColor="@color/deleteRed"
+         android:text="Delete"
+         android:drawableLeft="@mipmap/simplifytrash"
+         android:layout_alignParentRight="true"
+         android:layout_alignParentEnd="true"
+         android:layout_alignParentBottom="true" /> -->
+
+</RelativeLayout>

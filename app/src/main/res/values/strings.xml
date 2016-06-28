@@ -1,7 +1,26 @@
 <resources>
-    <string name="app_name">SimpleTodo</string>
+    <string name="app_name">Simplify</string>
     <string name="add">Add</string>
-    <string name="add_item">Add a new item...</string>
+    <string name="add_item">Add Task</string>
     <string name="save">SAVE</string>
     <string name="editItemBelow">Edit Item Below:</string>
+    <string name="task_detail">Task Detail:</string>
+    <string name="task_priority">Priority:</string>
+    <string name="task_completed">Task Detail:</string>
+    <string name="task_duedate">Due Date:</string>
+    <string name="task_classification">Type:</string>
+    <string name="low">Low</string>
+    <string name="medium">Medium</string>
+    <string name="high">High</string>
+
+    <string name="classification_prompt">Choose a folder</string>
+
+    <string-array name="classification_choices">
+        <item>Personal</item>
+        <item>Work</item>
+        <item>Errands</item>
+        <item>Other</item>
+
+    </string-array>
+
 </resources>

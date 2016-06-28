@@ -1,106 +1,179 @@
 package com.codepath.simpletodo;
 
-import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
-    ArrayList<String> todoItems;
-    ArrayAdapter<String> aToDoAdapter;
-    ListView lvItems;
-    EditText etEditText;
-    private final int REQUEST_CODE = 22;
+public class MainActivity extends AppCompatActivity implements TaskDialogFragment.EditTaskDialogListener {
+    public static final String TAG = "SimplifyTAG";
+    static CustomTasksAdapter mCustomTasksAdapter;
+    static ArrayList<Task> mTaskArrayList = new ArrayList<Task>();
 
+    ListView mListView;
+    EditText mEditTextAddTask;
+
+    /**
+     * Retrieves all items from database using SugarORM.
+     *
+     * @return ArrayList<Task> all task items
+     */
+    public static ArrayList<Task> getAllItems() {
+        List<Task> taskList = Task.listAll(Task.class);
+        return new ArrayList(taskList);
+
+    }
+
+    /**
+     * Used for creating TaskDialogFragment and binding arguments
+     *
+     * @param taskId   ID of the Task object from database
+     * @param position int position of task object in the arraylist
+     * @return
+     */
+    static TaskDialogFragment newInstance(Long taskId, int position) {
+        TaskDialogFragment f = new TaskDialogFragment();
+
+        // task ID and array position as argument.
+        Bundle args = new Bundle();
+        args.putInt("arrayPosition", position);
+        args.putLong("taskId", taskId);
+        f.setArguments(args);
+
+        return f;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        todoItems = new ArrayList<String>();
-        populateArrayItems();
-        lvItems = (ListView) findViewById(R.id.lvItems);
-        lvItems.setAdapter(aToDoAdapter);
-        etEditText = (EditText) findViewById(R.id.etEditText);
-        lvItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+        loadItemsIntoArrayList();
+
+        mListView = (ListView) findViewById(R.id.lvItems);
+        mEditTextAddTask = (EditText) findViewById(R.id.etEditText);
+
+        mCustomTasksAdapter = new CustomTasksAdapter(this, mTaskArrayList);
+
+        // attach customadapter to the ListView
+        mListView.setAdapter(mCustomTasksAdapter);
+        mCustomTasksAdapter.notifyDataSetChanged();
+
+        mListView.setLongClickable(true);
+
+        //add long click listener to items in listview for delete
+        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                todoItems.remove(position);
-                aToDoAdapter.notifyDataSetChanged();
-                writeItems();
+
+                //get current task
+                Task currTask = mTaskArrayList.get(position);
+
+                mTaskArrayList.remove(position);
+                currTask.delete();
+                mCustomTasksAdapter.notifyDataSetChanged();
                 return true;
             }
         });
 
-        lvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        //add on click listener to items in list view
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
 
-                Intent i = new Intent(MainActivity.this, EditItemActivity.class);
-                String text = todoItems.get(position);
-                // put "extras" into the bundle for access in the second activity
-                i.putExtra("text", text);
-                i.putExtra("position", position);
-                // brings up the second activity
-                startActivityForResult(i, REQUEST_CODE);
+                showEditDialog(mTaskArrayList.get(position).getId(), position);
+
 
             }
         });
     }
 
-    public void populateArrayItems(){
-        readItems();
-        aToDoAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, todoItems);
+    /**
+     * Used to refresh listview as necessary
+     */
+    public void refreshItems() {
+        mTaskArrayList.clear();
+        mTaskArrayList = getAllItems();
+        mCustomTasksAdapter.clear();
+        mCustomTasksAdapter = new CustomTasksAdapter(this, mTaskArrayList);
+
+        // attach customadapter to the ListView
+        mListView.setAdapter(mCustomTasksAdapter);
+        mCustomTasksAdapter.notifyDataSetChanged();
     }
 
-    private void readItems(){
-        File filesDir = getFilesDir();
-        File file = new File(filesDir, "todo.txt");
-        try{
-            todoItems = new ArrayList<String>(FileUtils.readLines(file));
-        } catch (IOException e){
+    /**
+     * OnResume()
+     */
+    public void onResume() {
+        super.onResume();
+        refreshItems();
+    }
 
+    /**
+     * Populates initial items into listview
+     */
+    private void loadItemsIntoArrayList() {
+        mTaskArrayList = getAllItems();
+        printTaskArrayList(mTaskArrayList);
+    }
+
+    /**
+     * Prints entire task arraylist. Used for debugging.
+     *
+     * @param mTaskArrayList
+     */
+    private void printTaskArrayList(ArrayList<Task> mTaskArrayList) {
+
+        for (Task t : mTaskArrayList) {
+            t.printTask();
         }
     }
 
-    private void writeItems(){
-        File filesDir = getFilesDir();
-        File file = new File(filesDir, "todo.txt");
-        try{
-            FileUtils.writeLines(file, todoItems);
-        } catch (IOException e){
-
-        }
-    }
     public void onAddItem(View view) {
-        aToDoAdapter.add(etEditText.getText().toString());
-        etEditText.setText("");
-        writeItems();
+        String taskText = mEditTextAddTask.getText().toString();
+
+        //set task text and default values for remaining fields
+        Task newTask = new Task();
+        newTask.taskText = taskText;
+        newTask.dueDate = "June 28, 2016";
+        newTask.priority = "Low";
+        newTask.completed = false;
+        newTask.classification = "Personal";
+        newTask.save();
+
+        mTaskArrayList.add(newTask);
+        mCustomTasksAdapter.notifyDataSetChanged();
+        mEditTextAddTask.setText("");
+
     }
 
+    /**
+     * Launch TaskDialogFragment with the given paramenters
+     *
+     * @param id
+     * @param position
+     */
+    private void showEditDialog(Long id, int position) {
+        FragmentManager fm = getSupportFragmentManager();
+        TaskDialogFragment editTaskDialogFragment = newInstance(id, position);
+        editTaskDialogFragment.show(fm, "dialog_edittask");
+    }
+
+
+    /**
+     * Called when dialogfragment is finished
+     *
+     * @param inputText String that gets returned after dialogFragment is finished
+     */
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // REQUEST_CODE is defined above
-        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
-            // Extract name value from result extras
-            String newText = data.getExtras().getString("newtext");
-            int position = data.getExtras().getInt("position", 0);
-            todoItems.set(position, newText);
-            aToDoAdapter.notifyDataSetChanged();
-            writeItems();
-            // Toast the name to display temporarily on screen
-            Toast.makeText(this, newText, Toast.LENGTH_SHORT).show();
-        }
+    public void onFinishEditTaskDialog(String inputText) {
+        refreshItems();
     }
 }

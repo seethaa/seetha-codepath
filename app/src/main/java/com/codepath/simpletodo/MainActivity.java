@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         //set task text and default values for remaining fields
         Task newTask = new Task();
         newTask.taskText = taskText;
-        newTask.dueDate = "June 28, 2016";
+        newTask.dueDate = "Tue, June 28";
         newTask.priority = "Low";
         newTask.completed = false;
         newTask.classification = "Personal";

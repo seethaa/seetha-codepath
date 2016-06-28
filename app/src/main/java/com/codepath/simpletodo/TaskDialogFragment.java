@@ -40,11 +40,11 @@ public class TaskDialogFragment extends DialogFragment implements OnClickListene
     Button mButtonSave;
     Spinner mSpinnerClassification;
 
-    String mPriority, mClassificationText;
+    String mPriority, mClassificationText, mDueDateText;
     int mPositionInArray;
 
     Calendar mCalendar;
-    DatePickerDialog.OnDateSetListener dateListener;
+    DatePickerDialog.OnDateSetListener mDateListener;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -60,20 +60,6 @@ public class TaskDialogFragment extends DialogFragment implements OnClickListene
         //get task that user is currently editing
         mCurrentTask = Task.findById(Task.class, taskId);
 
-        mCalendar = Calendar.getInstance();
-
-        dateListener = new DatePickerDialog.OnDateSetListener() {
-
-            @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear,
-                                  int dayOfMonth) {
-                mCalendar.set(Calendar.YEAR, year);
-                mCalendar.set(Calendar.MONTH, monthOfYear);
-                mCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                updateDate();
-            }
-
-        };
 
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         return dialog;
@@ -87,9 +73,50 @@ public class TaskDialogFragment extends DialogFragment implements OnClickListene
         mEditTextTaskText.setText("");
         mEditTextTaskText.append(mCurrentTask.taskText);
 
+
         mEditTextDueDate = (EditText) layout
                 .findViewById(R.id.etDueDate);
+
         mEditTextDueDate.setText(mCurrentTask.dueDate);
+
+        mEditTextDueDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                mCalendar = Calendar.getInstance();
+
+                mDateListener = new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear,
+                                          int dayOfMonth) {
+                        mCalendar.set(Calendar.YEAR, year);
+                        mCalendar.set(Calendar.MONTH, monthOfYear);
+                        mCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                        //update date in edittext
+                        String myFormat = "EEE, MMMM dd";
+                        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+
+                        mDueDateText = sdf.format(mCalendar.getTime());
+                        System.out.println("task printing date set: " + mDueDateText.toString());
+                        mEditTextDueDate.setText(mDueDateText);
+
+                    }
+
+                };
+
+                DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(), mDateListener, mCalendar
+                        .get(Calendar.YEAR), mCalendar.get(Calendar.MONTH),
+                        mCalendar.get(Calendar.DAY_OF_MONTH));
+                //disable all past dates
+                datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+                datePickerDialog.show();
+
+
+            }
+        });
+
 
         mRadioGroupPriority = (RadioGroup) layout
                 .findViewById(R.id.priorityGroup);
@@ -167,9 +194,6 @@ public class TaskDialogFragment extends DialogFragment implements OnClickListene
             case R.id.btnSave:
                 saveTask();
                 break;
-            case R.id.etDueDate:
-                bringUpDatePicker();
-                break;
 
         }
     }
@@ -208,25 +232,6 @@ public class TaskDialogFragment extends DialogFragment implements OnClickListene
     }
 
     /**
-     * show date picker
-     */
-    private void bringUpDatePicker() {
-
-        new DatePickerDialog(getContext(), dateListener, mCalendar
-                .get(Calendar.YEAR), mCalendar.get(Calendar.MONTH),
-                mCalendar.get(Calendar.DAY_OF_MONTH)).show();
-
-    }
-
-    private void updateDate() {
-
-        String myFormat = "MM/dd/yy"; //In which you need put here
-        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
-
-        mEditTextDueDate.setText(sdf.format(mCalendar.getTime()));
-    }
-
-    /**
      * Saves updated task to database and dismisses fragment to go back to MainActivity
      */
     public void saveTask() {
@@ -237,7 +242,7 @@ public class TaskDialogFragment extends DialogFragment implements OnClickListene
         //modify current task's values
         mCurrentTask.taskText = taskText;
         mCurrentTask.priority = mPriority;
-        mCurrentTask.dueDate = "June 28, 2016";
+        mCurrentTask.dueDate = mDueDateText;
         mCurrentTask.completed = false;
         mCurrentTask.classification = mClassificationText;
 
